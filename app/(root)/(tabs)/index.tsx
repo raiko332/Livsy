@@ -7,13 +7,16 @@ import { Card, FeaturedCard } from "@/components/Cards";
 import Filters from "@/components/Filters";
 import Search from "@/components/Search";
 import images from "@/constants/images";
+import { router } from "expo-router";
 
 const Home = () => {
   return (
     <SafeAreaView className="h-full bg-white">
       <FlatList
         data={[1, 2, 3, 4]}
-        renderItem={({ item }) => <Card />}
+        renderItem={({ item }) => (
+          <Card onPress={() => router.push("/properties/1")} />
+        )}
         numColumns={2}
         keyExtractor={(item) => item.toString()}
         contentContainerClassName="pb-32"
@@ -58,7 +61,9 @@ const Home = () => {
               </View>
               <FlatList
                 data={[1, 2, 3, 4]}
-                renderItem={({ item }) => <FeaturedCard />}
+                renderItem={({ item }) => (
+                  <FeaturedCard onPress={() => router.push("/properties/1")} />
+                )}
                 keyExtractor={(item) => item.toString()}
                 horizontal
                 showsHorizontalScrollIndicator={false}

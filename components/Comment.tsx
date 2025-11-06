@@ -9,12 +9,12 @@ const Comment = () => {
       <View className="flex flex-row items-center">
         <Image source={images.avatar} className="rounded-full size-14" />
         <Text className="ml-3 text-base text-black-300 text-start font-rubik-bold">
-          Dontol
+          Dharma
         </Text>
       </View>
 
       <Text className="mt-2 text-base text-black-200 font-rubik">
-        nice banget
+        nice banget keren propertynya keren banget
       </Text>
 
       <View className="flex flex-row items-center justify-between w-full mt-4">
