@@ -1,4 +1,5 @@
-import { FlatList, Image, Text, TouchableOpacity, View } from "react-native";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, FlatList, Image, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import icons from "@/constants/icons";
@@ -7,9 +8,39 @@ import { Card, FeaturedCard } from "@/components/Cards";
 import Filters from "@/components/Filters";
 import Search from "@/components/Search";
 import images from "@/constants/images";
-import { router } from "expo-router";
+import { auth } from "@/firebase/config";
+import { getUserName } from "@/src/hooks/getUserData";
+import { useRouter } from "expo-router";
+import { onAuthStateChanged } from "firebase/auth";
+
 
 const Home = () => {
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [name, setName] = useState<string>("User");
+  
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (!currentUser) {
+        // 🚪 Jika belum login, paksa ke halaman login
+        router.replace("/sign-in");
+        return;
+      }
+      const fetchedName = await getUserName();
+      setName(fetchedName);
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  },[])
+
+  if(loading){
+    return(
+      <View className="flex-1 justify-center items-center">
+        <ActivityIndicator size="large" color="#3369bd" />
+      </View>
+      )
+  }
+
   return (
     <SafeAreaView className="h-full bg-white">
       <FlatList
@@ -34,10 +65,10 @@ const Home = () => {
 
                 <View className="flex flex-col items-start justify-center ml-2">
                   <Text className="text-xs font-rubik text-black-100">
-                    Good Morning
+                    Good Morning {name}
                   </Text>
                   <Text className="text-base font-rubik-medium text-black-300">
-                    Siganteng
+                    {}
                   </Text>
                 </View>
               </View>

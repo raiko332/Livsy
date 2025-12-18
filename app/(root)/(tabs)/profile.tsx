@@ -1,17 +1,22 @@
 import {
+  Alert,
   Image,
   ImageSourcePropType,
   SafeAreaView,
   ScrollView,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 
 import { settings } from "@/constants/data";
 import icons from "@/constants/icons";
 import images from "@/constants/images";
+import { auth } from "@/firebase/config";
+import { getUserName } from "@/src/hooks/getUserData";
 import { useRouter } from "expo-router";
+import { onAuthStateChanged, signOut, User } from "firebase/auth";
+import { useEffect, useState } from "react";
 
 interface SettingsItemProp {
   icon: ImageSourcePropType;
@@ -45,6 +50,38 @@ const SettingsItem = ({
 
 const Profile = () => {
   const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+  const [name, setName] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // pantau perubahan status login
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (!currentUser) {
+        router.replace("/sign-in");
+        return;
+      }
+
+      setUser(currentUser);
+
+      const fetchedName = await getUserName();
+      setName(fetchedName);
+
+      setLoading(false);
+    });
+    
+    return () => unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      Alert.alert("Logout berhasil", "Anda telah keluar dari akun");
+      router.replace("/sign-in");
+    }catch (error:any){
+      Alert.alert("Error", error.message)
+    }
+  }
   return (
     <SafeAreaView className="h-full bg-white">
       <ScrollView
@@ -67,7 +104,7 @@ const Profile = () => {
             </TouchableOpacity>
 
             <Text className="mt-2 text-2xl font-rubik-bold">
-              {"Saya Wisnu"}
+              saya {name || "User"}
             </Text>
           </View>
         </View>
@@ -89,7 +126,7 @@ const Profile = () => {
             title="Logout"
             textStyle="text-danger"
             showArrow={false}
-            onPress={() => router.push("/welcome-screen")}
+            onPress={handleLogout}
           />
         </View>
       </ScrollView>

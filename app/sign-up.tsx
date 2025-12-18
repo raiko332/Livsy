@@ -1,19 +1,49 @@
-import React from "react";
+import { useState } from "react";
 import {
+  Alert,
   Image,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import images from "@/constants/images";
+import { auth, db } from "@/firebase/config";
 import { Link, useRouter } from "expo-router";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
 
 const SignUp = () => {
   const router = useRouter();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleRegister = async () => {
+    if (!name || !email || !password){
+      Alert.alert("Warning", "Nama, Email, dan Password Wajib Di Isi")
+      return;
+    }
+    try{
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        name: name,
+        email: email,
+        createdAt: new Date().toISOString(),
+      });
+      Alert.alert("Success", "Akun Berhasil dibuat")
+      router.push("/sign-in")
+    }catch(error: any){
+      Alert.alert("error" + error.message);
+    }
+  };
+
   return (
     <SafeAreaView className="h-full bg-white">
       <ScrollView
@@ -29,6 +59,8 @@ const SignUp = () => {
               Name
             </Text>
             <TextInput
+              value = {name}
+              onChangeText={setName}
               placeholder="John doe"
               className="px-6 py-4 border-b focus:border-primary-300 border-black-100 rounded-xl"
             ></TextInput>
@@ -38,6 +70,10 @@ const SignUp = () => {
               Email
             </Text>
             <TextInput
+              value={email}
+              onChangeText={setEmail}
+              placeholder="Masukkan email"
+              keyboardType="email-address"
               placeholder="example@mail.com"
               className="px-6 py-4 border-b focus:border-primary-300 border-black-100 rounded-xl"
             ></TextInput>
@@ -47,12 +83,15 @@ const SignUp = () => {
               Password
             </Text>
             <TextInput
-              placeholder="Input Password"
+              value={password}
+              onChangeText={setPassword}
+              placeholder="Masukkan password"
+              secureTextEntry
               className="px-6 py-4 border-b focus:border-primary-300 border-black-100 rounded-xl"
             ></TextInput>
           </View>
           <TouchableOpacity
-            onPress={() => router.push("/")}
+             onPress={handleRegister}
             className="w-full py-4 mt-8 rounded-full shadow-md bg-primary-300 shadow-zinc-300"
           >
             <Text className="text-lg text-center text-white font-rubik ">
