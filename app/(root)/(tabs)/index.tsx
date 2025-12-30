@@ -33,12 +33,12 @@ const Home = () => {
     return () => unsubscribe();
   },[])
 
-  if(loading){
-    return(
-      <View className="flex-1 justify-center items-center">
+  if (loading) {
+    return (
+      <View className="items-center justify-center flex-1">
         <ActivityIndicator size="large" color="#3369bd" />
       </View>
-      )
+    );
   }
 
   return (
@@ -65,14 +65,14 @@ const Home = () => {
 
                 <View className="flex flex-col items-start justify-center ml-2">
                   <Text className="text-xs font-rubik text-black-100">
-                    Good Morning {name}
+                    Email {name}
                   </Text>
                   <Text className="text-base font-rubik-medium text-black-300">
-                    {}
+                    {name}
                   </Text>
                 </View>
               </View>
-              <Image source={icons.bell} className="size-6" />
+              <Image source={icons.person} className="size-6" />
             </View>
 
             {/* search */}

@@ -110,8 +110,16 @@ const Profile = () => {
         </View>
 
         <View className="flex flex-col mt-10">
-          <SettingsItem icon={icons.send} title="Sell Properties" />
-          <SettingsItem icon={icons.wallet} title="Wallet" />
+          <SettingsItem
+            icon={icons.wallet}
+            title="Sell Properties"
+            onPress={() => router.push("/properties/add")}
+          />
+          <SettingsItem
+            icon={icons.shield}
+            title="List Properties"
+            onPress={() => router.push("/properties/list")}
+          />
         </View>
 
         <View className="flex flex-col pt-5 mt-5 border-t border-primary-200">

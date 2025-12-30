@@ -10,8 +10,6 @@ import {
   View,
 } from "react-native";
 
-import Comment from "@/components/Comment";
-import { facilities } from "@/constants/data";
 import icons from "@/constants/icons";
 import images from "@/constants/images";
 const Property = () => {
@@ -21,7 +19,7 @@ const Property = () => {
     <View>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerClassName="pb-32 bg-white"
+        contentContainerClassName="pb-44 bg-white"
       >
         <View className="relative w-full" style={{ height: windowHeight / 2 }}>
           <Image
@@ -47,15 +45,6 @@ const Property = () => {
               >
                 <Image source={icons.backArrow} className="size-5" />
               </TouchableOpacity>
-
-              <View className="flex flex-row items-center gap-3">
-                <Image
-                  source={icons.heart}
-                  className="size-7"
-                  tintColor={"#191D31"}
-                />
-                <Image source={icons.send} className="size-7" />
-              </View>
             </View>
           </View>
         </View>
@@ -69,13 +58,6 @@ const Property = () => {
             <View className="flex flex-row items-center px-4 py-2 rounded-full bg-primary-100">
               <Text className="text-xs font-rubik-bold text-primary-300">
                 Villa
-              </Text>
-            </View>
-
-            <View className="flex flex-row items-center gap-2">
-              <Image source={icons.star} className="size-5" />
-              <Text className="mt-1 text-sm text-black-200 font-rubik-medium">
-                4.5 (10 reviews)
               </Text>
             </View>
           </View>
@@ -100,10 +82,10 @@ const Property = () => {
               3 sqft
             </Text>
           </View>
-
+          {/* owner */}
           <View className="w-full mt-5 border-t border-primary-200 pt-7">
             <Text className="text-xl text-black-300 font-rubik-bold">
-              Agent
+              Owner
             </Text>
 
             <View className="flex flex-row items-center justify-between mt-4">
@@ -125,11 +107,10 @@ const Property = () => {
 
               <View className="flex flex-row items-center gap-3">
                 <Image source={icons.chat} className="size-7" />
-                <Image source={icons.phone} className="size-7" />
               </View>
             </View>
           </View>
-
+          {/* desc */}
           <View className="mt-7">
             <Text className="text-xl text-black-300 font-rubik-bold">
               Overview
@@ -141,7 +122,7 @@ const Property = () => {
             </Text>
           </View>
 
-          <View className="mt-7">
+          {/* <View className="mt-7">
             <Text className="text-xl text-black-300 font-rubik-bold">
               Facilities
             </Text>
@@ -176,7 +157,7 @@ const Property = () => {
                 </View>
               </View>
             )}
-          </View>
+          </View> */}
 
           <View className="mt-7">
             <Text className="text-xl text-black-300 font-rubik-bold">
@@ -194,8 +175,8 @@ const Property = () => {
               contentContainerClassName="flex gap-4 mt-3"
             />
           </View>
-
-          <View className="mt-7">
+          {/* location */}
+          <View className="mb-10 mt-7">
             <Text className="text-xl text-black-300 font-rubik-bold">
               Location
             </Text>
@@ -211,32 +192,11 @@ const Property = () => {
               className="w-full mt-5 h-52 rounded-xl"
             />
           </View>
-
-          <View className="mt-7">
-            <View className="flex flex-row items-center justify-between">
-              <View className="flex flex-row items-center">
-                <Image source={icons.star} className="size-6" />
-                <Text className="ml-2 text-xl text-black-300 font-rubik-bold">
-                  5 (2 reviews)
-                </Text>
-              </View>
-
-              <TouchableOpacity>
-                <Text className="text-base text-primary-300 font-rubik-bold">
-                  View All
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            <View className="mt-5">
-              <Comment />
-            </View>
-          </View>
         </View>
       </ScrollView>
 
       <View className="absolute bottom-0 w-full bg-white border-t border-l border-r rounded-t-2xl border-primary-200 p-7">
-        <View className="flex flex-row items-center justify-between gap-10">
+        <View className="flex flex-col gap-6">
           <View className="flex flex-col items-start">
             <Text className="text-xs text-black-200 font-rubik-medium">
               Price
@@ -245,13 +205,13 @@ const Property = () => {
               numberOfLines={1}
               className="text-2xl text-primary-300 text-start font-rubik-bold"
             >
-              $200
+              Rp200.000.000.000
             </Text>
           </View>
 
           <TouchableOpacity className="flex flex-row items-center justify-center flex-1 py-3 rounded-full shadow-md bg-primary-300 shadow-zinc-400">
             <Text className="text-lg text-center text-white font-rubik-bold">
-              Book Now
+              Buy Property
             </Text>
           </TouchableOpacity>
         </View>
