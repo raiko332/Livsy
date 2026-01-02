@@ -234,8 +234,17 @@ mohon petunjuknya ya!
 
           {/* SPECS */}
           <View className="flex-row items-center mt-5">
+            <View className="flex flex-row items-center justify-center rounded-full bg-primary-100 size-10">
+              <Image source={icons.bed} className="size-4" />
+            </View>
             <Text className="mr-4">{property.bedrooms} Beds</Text>
+            <View className="flex flex-row items-center justify-center rounded-full bg-primary-100 size-10 ml-7">
+              <Image source={icons.bath} className="size-4" />
+            </View>
             <Text className="mr-4">{property.bathrooms} Baths</Text>
+            <View className="flex flex-row items-center justify-center rounded-full bg-primary-100 size-10 ml-7">
+              <Image source={icons.area} className="size-4" />
+            </View>
             <Text>
               {property.area} {property.areaUnit}
             </Text>
