@@ -1,53 +1,45 @@
-import React, { useState } from "react";
-import { router, useLocalSearchParams } from "expo-router";
-import { Text, ScrollView, TouchableOpacity } from "react-native";
+import React from "react";
+import { ScrollView, Text, TouchableOpacity } from "react-native";
 
 import { categories } from "@/constants/data";
 
-const Filters = () => {
-  const params = useLocalSearchParams<{ filter?: string }>();
-  const [selectedCategory, setSelectedCategory] = useState(
-    params.filter || "All"
-  );
+interface FiltersProps {
+  active: string;
+  onChange: (value: string) => void;
+}
 
-  const handleCategoryPress = (category: string) => {
-    if (selectedCategory === category) {
-      setSelectedCategory("");
-      router.setParams({ filter: "" });
-      return;
-    }
-
-    setSelectedCategory(category);
-    router.setParams({ filter: category });
-  };
-
+const Filters = ({ active, onChange }: FiltersProps) => {
   return (
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
       className="mt-3 mb-2"
     >
-      {categories.map((item, index) => (
-        <TouchableOpacity
-          onPress={() => handleCategoryPress(item.category)}
-          key={index}
-          className={`flex flex-col items-start mr-4 px-4 py-2 rounded-full ${
-            selectedCategory === item.category
-              ? "bg-primary-300"
-              : "bg-primary-100 border border-primary-200"
-          }`}
-        >
-          <Text
-            className={`text-sm ${
-              selectedCategory === item.category
-                ? "text-white font-rubik-bold mt-0.5"
-                : "text-black-300 font-rubik"
+      {categories.map((item, index) => {
+        const isActive = active === item.category;
+
+        return (
+          <TouchableOpacity
+            key={index}
+            onPress={() => onChange(item.category)}
+            className={`mr-4 px-4 py-2 rounded-full ${
+              isActive
+                ? "bg-primary-300"
+                : "bg-primary-100 border border-primary-200"
             }`}
           >
-            {item.title}
-          </Text>
-        </TouchableOpacity>
-      ))}
+            <Text
+              className={`text-sm ${
+                isActive
+                  ? "text-white font-rubik-bold"
+                  : "text-black-300 font-rubik"
+              }`}
+            >
+              {item.title}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
     </ScrollView>
   );
 };

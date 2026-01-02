@@ -9,15 +9,14 @@ import {
   View
 } from "react-native";
 
-import { settings } from "@/constants/data";
+
 import icons from "@/constants/icons";
 import images from "@/constants/images";
-import { auth } from "@/firebase/config";
-import { getUserName } from "@/src/hooks/getUserData";
+import { auth, db } from "@/firebase/config";
 import { useRouter } from "expo-router";
 import { onAuthStateChanged, signOut, User } from "firebase/auth";
+import { doc, onSnapshot } from "firebase/firestore";
 import { useEffect, useState } from "react";
-
 interface SettingsItemProp {
   icon: ImageSourcePropType;
   title: string;
@@ -53,25 +52,46 @@ const Profile = () => {
   const [user, setUser] = useState<User | null>(null);
   const [name, setName] = useState<string>("");
   const [loading, setLoading] = useState(true);
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [photoURL, setPhotoURL] = useState<string | null>(null);
+  useEffect(() => {
+    if (!auth.currentUser) return;
+
+    setEmail(auth.currentUser.email || "");
+
+    const userRef = doc(db, "users", auth.currentUser.uid);
+
+    const unsubscribe = onSnapshot(userRef, (snap) => {
+      if (!snap.exists()) return;
+
+      const data = snap.data();
+
+      setName(data.name || "");
+      setPhone(data.phone || "");
+      setPhotoURL(data.photoURL || null); // 🔥 FIX FINAL
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+
 
   useEffect(() => {
-    // pantau perubahan status login
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (!currentUser) {
         router.replace("/sign-in");
         return;
       }
 
       setUser(currentUser);
-
-      const fetchedName = await getUserName();
-      setName(fetchedName);
-
+      setEmail(currentUser.email || "");
       setLoading(false);
     });
-    
+
     return () => unsubscribe();
   }, []);
+
 
   const handleLogout = async () => {
     try {
@@ -96,10 +116,17 @@ const Profile = () => {
         <View className="flex flex-row justify-center mt-5">
           <View className="relative flex flex-col items-center mt-5">
             <Image
-              source={images.avatar}
+              source={
+                photoURL
+                  ? { uri: photoURL }
+                  : images.avatar
+              }
               className="relative rounded-full size-44"
             />
-            <TouchableOpacity className="absolute bottom-11 right-2">
+            <TouchableOpacity
+              className="absolute bottom-11 right-2"
+              onPress={() => router.push("/profile/edit")}
+            >
               <Image source={icons.edit} className="size-9" />
             </TouchableOpacity>
 
@@ -122,11 +149,11 @@ const Profile = () => {
           />
         </View>
 
-        <View className="flex flex-col pt-5 mt-5 border-t border-primary-200">
+        {/* <View className="flex flex-col pt-5 mt-5 border-t border-primary-200">
           {settings.slice(2).map((item, index) => (
             <SettingsItem key={index} {...item} />
           ))}
-        </View>
+        </View> */}
 
         <View className="flex flex-col pt-5 mt-5 border-t border-primary-200">
           <SettingsItem

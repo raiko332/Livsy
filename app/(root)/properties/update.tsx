@@ -1,7 +1,7 @@
-import FormField from "@/components/FormField";
-import MapPicker from "@/components/MapPicker";
-import SelectField from "@/components/SelectField";
+import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
+import { router, useLocalSearchParams } from "expo-router";
+import { useEffect, useState } from "react";
 import {
   Alert,
   Image,
@@ -12,23 +12,27 @@ import {
   View,
 } from "react-native";
 
+import FormField from "@/components/FormField";
+import MapPicker from "@/components/MapPicker";
 import { Section } from "@/components/Section";
+import SelectField from "@/components/SelectField";
+
 import {
   AreaUnit,
   Property,
   PropertyStatus,
   PropertyType,
 } from "@/constants/property";
-import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
-import { useState } from "react";
 
-import { auth, db } from "@/firebase/config";
-import { createProperty } from "@/src/services/property.service";
-import { doc, getDoc } from "firebase/firestore";
+import { auth } from "@/firebase/config";
+import {
+  getPropertyById,
+  updateProperty,
+} from "@/src/services/property.service";
 
 // ================= SCREEN =================
-export default function AddPropertyScreen() {
+export default function UpdatePropertyScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
   const [loading, setLoading] = useState(false);
 
   const [form, setForm] = useState<Property>({
@@ -51,34 +55,53 @@ export default function AddPropertyScreen() {
     },
   });
 
+  // ================= LOAD PROPERTY =================
+  useEffect(() => {
+    if (!id) return;
+
+    const loadProperty = async () => {
+      try {
+        const data = await getPropertyById(id);
+
+        setForm({
+          title: data.title,
+          type: data.type,
+          status: data.listingStatus,
+          price: data.price,
+
+          bedrooms: data.bedrooms,
+          bathrooms: data.bathrooms,
+          area: data.area,
+          areaUnit: data.areaUnit,
+
+          description: data.description,
+          coverImage: data.coverImage,
+          gallery: data.galleryImages || [],
+
+          location: {
+            city: data.city,
+            address: data.fullAddress,
+            latitude: data.location.latitude,
+            longitude: data.location.longitude,
+          },
+        });
+      } catch {
+        Alert.alert("Error", "Failed to load property");
+        router.back();
+      }
+    };
+
+    loadProperty();
+  }, [id]);
+
   // ================= SUBMIT =================
   const handleSubmit = async () => {
-    if (
-      !form.title ||
-      !form.location.city ||
-      !form.location.address ||
-      !form.coverImage
-    ) {
-      Alert.alert(
-        "Validation",
-        "Title, City, Address, dan Cover Image wajib diisi"
-      );
-      return;
-    }
-
-    if (!auth.currentUser) {
-      Alert.alert("Error", "User not authenticated");
-      return;
-    }
+    if (!auth.currentUser || !id) return;
 
     try {
       setLoading(true);
 
-      const userRef = doc(db, "users", auth.currentUser.uid);
-      const userSnap = await getDoc(userRef);
-      const userData = userSnap.exists() ? userSnap.data() : null;
-
-      await createProperty({
+      await updateProperty(id, {
         title: form.title,
         type: form.type,
         listingStatus: form.status,
@@ -98,72 +121,24 @@ export default function AddPropertyScreen() {
 
         coverImageUri: form.coverImage,
         galleryImageUris: form.gallery,
-
         ownerId: auth.currentUser.uid,
-        ownerName: userData?.name || "Unknown",
-        ownerPhone: userData?.phone || "-",
       });
 
-      Alert.alert("Success", "Property successfully created");
+      Alert.alert("Success", "Property updated successfully");
       router.back();
     } catch (error: any) {
-      Alert.alert("Error", error.message || "Failed to create property");
+      Alert.alert("Error", error.message || "Failed to update property");
     } finally {
       setLoading(false);
     }
   };
 
-  // ================= PERMISSIONS =================
-  const requestCameraPermission = async () => {
-    const { status } =
-      await ImagePicker.requestCameraPermissionsAsync();
-    return status === "granted";
-  };
-
-  const requestGalleryPermission = async () => {
-    const { status } =
-      await ImagePicker.requestMediaLibraryPermissionsAsync();
-    return status === "granted";
-  };
-
-  // ================= COVER IMAGE =================
-  const handlePickCoverImage = () => {
-    Alert.alert("Cover Image", "Pilih sumber gambar", [
-      { text: "Kamera", onPress: openCoverCamera },
-      { text: "Galeri", onPress: openCoverGallery },
-      { text: "Batal", style: "cancel" },
-    ]);
-  };
-
-  const openCoverCamera = async () => {
-    const allowed = await requestCameraPermission();
-    if (!allowed) {
-      Alert.alert("Permission", "Akses kamera ditolak");
-      return;
-    }
-
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 0.7,
-    });
-
-    if (!result.canceled) {
-      setForm({ ...form, coverImage: result.assets[0].uri });
-    }
-  };
-
-  const openCoverGallery = async () => {
-    const allowed = await requestGalleryPermission();
-    if (!allowed) {
-      Alert.alert("Permission", "Akses galeri ditolak");
-      return;
-    }
-
+  // ================= IMAGE PICKER =================
+  const pickCoverImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
+      quality: 0.7,
       allowsEditing: true,
       aspect: [4, 3],
-      quality: 0.7,
     });
 
     if (!result.canceled) {
@@ -171,57 +146,19 @@ export default function AddPropertyScreen() {
     }
   };
 
-  // ================= GALLERY =================
-  const handlePickGalleryImage = () => {
-    Alert.alert("Gallery", "Pilih sumber gambar", [
-      { text: "Kamera", onPress: openGalleryCamera },
-      { text: "Galeri", onPress: openGalleryLibrary },
-      { text: "Batal", style: "cancel" },
-    ]);
-  };
-
-  const openGalleryCamera = async () => {
-    if (form.gallery.length >= 5) {
-      Alert.alert("Limit", "Maksimal 5 gambar");
-      return;
-    }
-
-    const allowed = await requestCameraPermission();
-    if (!allowed) return;
-
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 0.7,
-    });
-
-    if (!result.canceled) {
-      setForm({
-        ...form,
-        gallery: [...form.gallery, result.assets[0].uri],
-      });
-    }
-  };
-
-  const openGalleryLibrary = async () => {
-    const allowed = await requestGalleryPermission();
-    if (!allowed) return;
-
-    const remaining = 5 - form.gallery.length;
-    if (remaining <= 0) {
-      Alert.alert("Limit", "Maksimal 5 gambar");
-      return;
-    }
-
+  const pickGalleryImages = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       allowsMultipleSelection: true,
-      selectionLimit: remaining,
       quality: 0.7,
+      selectionLimit: 5 - form.gallery.length,
     });
 
     if (!result.canceled) {
-      const uris = result.assets.map((a) => a.uri);
-      setForm({ ...form, gallery: [...form.gallery, ...uris] });
+      const uris = result.assets.map((asset) => asset.uri);
+      setForm({
+        ...form,
+        gallery: [...form.gallery, ...uris].slice(0, 5),
+      });
     }
   };
 
@@ -231,9 +168,9 @@ export default function AddPropertyScreen() {
       {/* HEADER */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#111" />
+          <Ionicons name="arrow-back" size={24} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Add Property</Text>
+        <Text style={styles.headerTitle}>Update Property</Text>
         <View style={{ width: 24 }} />
       </View>
 
@@ -278,7 +215,9 @@ export default function AddPropertyScreen() {
             label="Property Description"
             value={form.description}
             multiline
-            onChangeText={(v) => setForm({ ...form, description: v })}
+            onChangeText={(v) =>
+              setForm({ ...form, description: v })
+            }
           />
         </Section>
 
@@ -302,7 +241,6 @@ export default function AddPropertyScreen() {
               setForm({ ...form, bedrooms: Number(v) })
             }
           />
-
           <FormField
             label="Bathrooms"
             value={String(form.bathrooms)}
@@ -311,7 +249,6 @@ export default function AddPropertyScreen() {
               setForm({ ...form, bathrooms: Number(v) })
             }
           />
-
           <FormField
             label="Area"
             value={String(form.area)}
@@ -320,7 +257,6 @@ export default function AddPropertyScreen() {
               setForm({ ...form, area: Number(v) })
             }
           />
-
           <SelectField
             label="Area Unit"
             value={form.areaUnit}
@@ -345,7 +281,6 @@ export default function AddPropertyScreen() {
               })
             }
           />
-
           <FormField
             label="Full Address"
             value={form.location.address}
@@ -356,11 +291,6 @@ export default function AddPropertyScreen() {
               })
             }
           />
-
-          <Text style={{ marginBottom: 8, fontWeight: "600" }}>
-            Pick Location on Map
-          </Text>
-
           <MapPicker
             latitude={form.location.latitude}
             longitude={form.location.longitude}
@@ -380,31 +310,21 @@ export default function AddPropertyScreen() {
         <Section title="Media">
           <TouchableOpacity
             style={styles.mediaBtn}
-            onPress={handlePickCoverImage}
+            onPress={pickCoverImage}
           >
-            <Text style={styles.mediaText}>
-              {form.coverImage
-                ? "Change Cover Image"
-                : "Upload Cover Image"}
-            </Text>
+            <Text style={styles.mediaText}>Change Cover Image</Text>
           </TouchableOpacity>
 
           {form.coverImage && (
             <Image
               source={{ uri: form.coverImage }}
-              style={{
-                height: 180,
-                borderRadius: 12,
-                marginTop: 12,
-              }}
+              style={{ height: 180, marginTop: 12, borderRadius: 12 }}
             />
           )}
-        </Section>
 
-        <Section title="Gallery">
           <TouchableOpacity
-            style={styles.mediaBtn}
-            onPress={handlePickGalleryImage}
+            style={[styles.mediaBtn, { marginTop: 12 }]}
+            onPress={pickGalleryImages}
           >
             <Text style={styles.mediaText}>
               Upload Gallery ({form.gallery.length}/5)
@@ -418,7 +338,7 @@ export default function AddPropertyScreen() {
           disabled={loading}
         >
           <Text style={styles.submitText}>
-            {loading ? "Saving..." : "Save Property"}
+            {loading ? "Updating..." : "Update Property"}
           </Text>
         </TouchableOpacity>
       </ScrollView>
