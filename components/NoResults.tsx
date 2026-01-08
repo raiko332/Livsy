@@ -3,7 +3,13 @@ import { View, Text, Image } from "react-native";
 
 import images from "@/constants/images";
 
-const NoResults = () => {
+const NoResults = ({
+  title = "No Result",
+  subtitle = "We could not find any result",
+}: {
+  title?: string;
+  subtitle?: string;
+}) => {
   return (
     <View className="flex items-center my-5">
       <Image
@@ -12,10 +18,10 @@ const NoResults = () => {
         resizeMode="contain"
       />
       <Text className="text-2xl font-rubik-bold text-black-300 mt-5">
-        No Result
+        {title}
       </Text>
       <Text className="text-base text-black-100 mt-2">
-        We could not find any result
+        {subtitle}
       </Text>
     </View>
   );

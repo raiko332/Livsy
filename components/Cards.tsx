@@ -153,7 +153,7 @@ export const Card = ({
 
       <View className="flex flex-col mt-2">
         <Text className="text-base font-rubik-bold text-black-300">
-          {truncateText(title, 18)}
+          {truncateText(title, 16)}
         </Text>
         <Text className="text-xs font-rubik text-black-100">{city}</Text>
 

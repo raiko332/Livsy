@@ -15,6 +15,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import NoResults from "@/components/NoResults";
 
 import { auth } from "@/firebase/config";
 import {
@@ -178,19 +179,27 @@ export default function ListProperty() {
       Alert.alert("Error", "Gagal menghapus properti");
     } finally {
       setDeleteModalVisible(false);
-      setSelectedProperty(null);
+      setSelectedProperty(null); 
     }
   };
 
 
   /* ================= UI ================= */
 
+  const sellProperties = properties.filter((p) => p.status === "available");
+
   return (
     <SafeAreaView className="flex-1 bg-white">
       <FlatList
-        data={properties}
+        data={sellProperties}
         keyExtractor={(item) => item.id}
         numColumns={2}
+        ListEmptyComponent={
+          <NoResults
+            title="No Sell Properties"
+            subtitle="You don't have any properties for sale"
+          />
+        }
         renderItem={({ item }) => (
           <Card
             item={item}

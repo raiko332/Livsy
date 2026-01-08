@@ -12,6 +12,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Card, FeaturedCard } from "@/components/Cards";
 import Filters from "@/components/Filters";
 import Search from "@/components/Search";
+import NoResults from "@/components/NoResults";
 
 import icons from "@/constants/icons";
 import images from "@/constants/images";
@@ -223,6 +224,14 @@ const Home = () => {
           columnWrapperClassName="flex gap-5 px-5"
           contentContainerClassName="pb-10"
           showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            filteredProperties.length === 0 && activeCategory !== "All" ? (
+              <NoResults
+                title="Tidak ada properti"
+                subtitle={`Tidak ada properti untuk kategori ${activeCategory}`}
+              />
+            ) : null
+          }
           renderItem={({ item }) => (
             <Card
               title={item.title}
